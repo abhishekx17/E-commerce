@@ -77,28 +77,28 @@ const Hero = () => {
             className="flex flex-col sm:flex-row w-full flex-shrink-0"
           >
             {/* Left text side */}
-<div className="w-full sm:w-1/2 flex items-center justify-center py-12 sm:py-0 bg-white px-6 sm:px-8">
+<div className="w-full sm:w-1/2 flex items-center justify-center py-6 sm:py-0 bg-white px-4 sm:px-8">
   <div className="text-[#414141] text-center sm:text-left max-w-xs sm:max-w-sm">
     <div className="flex items-center gap-2 justify-center sm:justify-start">
-      <p className="w-8 md:w-11 h-[2px] bg-[#424242]" />
+      <p className="w-6 sm:w-8 md:w-11 h-[2px] bg-[#424242]" />
       <p className="font-medium text-xs sm:text-sm md:text-base tracking-wide whitespace-nowrap">
         {slide.tagline}
       </p>
     </div>
-    <h1 className="prata-regular text-2xl sm:text-3xl py-2 sm:py-3 lg:text-5xl leading-snug sm:leading-relaxed break-words">
+    <h1 className="prata-regular text-xl sm:text-3xl py-2 sm:py-3 lg:text-5xl leading-snug sm:leading-relaxed break-words">
       {slide.title}
     </h1>
     <div className="flex items-center gap-2 justify-center sm:justify-start">
       <p className="font-semibold text-xs sm:text-sm md:text-base cursor-pointer hover:tracking-wide transition-all">
         SHOP NOW
       </p>
-      <p className="w-8 md:w-11 h-[1px] bg-[#414141]" />
+      <p className="w-6 sm:w-8 md:w-11 h-[1px] bg-[#414141]" />
     </div>
   </div>
 </div>
 
             {/* Right image side */}
-            <div className="w-full sm:w-1/2 h-[300px] sm:h-auto">
+            <div className="w-full sm:w-1/2 h-[200px] sm:h-auto">
               <img
                 className="w-full h-full object-cover"
                 src={slide.image}
