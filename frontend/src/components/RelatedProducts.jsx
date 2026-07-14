@@ -19,13 +19,19 @@ const RelatedProducts = ({ category, subCategory }) => {
   }, [products, category, subCategory]);
 
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
-      { threshold: 0.08 }
-    );
-    if (sectionRef.current) observer.observe(sectionRef.current);
-    return () => observer.disconnect();
-  }, []);
+    if (!related.length) return;
+    const raf = requestAnimationFrame(() => {
+      if (!sectionRef.current) return;
+      const observer = new IntersectionObserver(
+        ([entry]) => { if (entry.isIntersecting) setVisible(true); },
+        { threshold: 0.05 }
+      );
+      observer.observe(sectionRef.current);
+    
+      return () => observer.disconnect();
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [related.length]);
 
   if (!related.length) return null;
 
