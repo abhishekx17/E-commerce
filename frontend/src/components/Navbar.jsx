@@ -1,128 +1,233 @@
 import { assets } from "assets/assets";
 import { ShopContext } from "context/ShopContext";
-import React, { useContext, useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import React, { useContext, useEffect, useRef, useState } from "react";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 
 const Navbar = () => {
   const [visible, setVisible] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [profileOpen, setProfileOpen] = useState(false);
   const { setShowSearch, getCartCount } = useContext(ShopContext);
+  const profileRef = useRef(null);
+  const navigate = useNavigate();
+
+  // Scroll shadow
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Close profile dropdown on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  // Lock body scroll when mobile menu open
+  useEffect(() => {
+    document.body.style.overflow = visible ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [visible]);
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+    setProfileOpen(false);
+  };
+
+  const navLinkClass = ({ isActive }) =>
+    `relative text-[11px] sm:text-xs tracking-[0.18em] font-medium uppercase transition-colors duration-200 pb-0.5 group ${
+      isActive ? "text-[#1A1A1A]" : "text-[#6B6B6B] hover:text-[#1A1A1A]"
+    }`;
 
   return (
-    <div className="flex items-center justify-between py-4 sm:py-5 font-medium">
-      <Link to="/">
-        <img src={assets.logo} className="w-32 sm:w-44 md:w-50" alt="Velora" />
-      </Link>
+    <>
+      {/* ── Sticky header shell ── */}
+      <header
+        className={`sticky top-0 z-40 bg-[#FAF9F7]/95 backdrop-blur-md transition-shadow duration-300 ${
+          scrolled ? "shadow-[0_1px_16px_rgba(0,0,0,0.07)]" : "shadow-none"
+        }`}
+      >
+        <div className="px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw]">
+          <div className="flex items-center justify-between h-[62px] sm:h-[70px]">
 
-      <ul className="hidden sm:flex gap-5 text-sm text-gray-700">
-        <NavLink to="/" className="flex flex-col items-center gap-1">
-          <p>Home</p>
-          <hr className="w-2/4 border-none h-[1.5px] bg-gray-700 hidden" />
-        </NavLink>
+            {/* Logo */}
+            <Link to="/" className="flex-shrink-0">
+              <img
+                src={assets.logo}
+                className="w-28 sm:w-36 md:w-40 transition-opacity duration-200 hover:opacity-75"
+                alt="Velora"
+              />
+            </Link>
 
-        <NavLink to="/collection" className="flex flex-col items-center gap-1">
-          <p>COLLECTION</p>
-          <hr className="w-2/4 border-none h-[1.5px] bg-gray-700 hidden" />
-        </NavLink>
+            {/* Desktop nav */}
+            <nav className="hidden sm:flex items-center gap-8">
+              {[
+                { to: "/", label: "Home" },
+                { to: "/collection", label: "Collection" },
+                { to: "/about", label: "About" },
+                { to: "/contact", label: "Contact" },
+              ].map(({ to, label }) => (
+                <NavLink key={to} to={to} className={navLinkClass} end={to === "/"}>
+                  {label}
+                  {/* animated underline */}
+                  <span className="absolute bottom-0 left-0 h-[1.5px] bg-[#8C7355] w-0 group-hover:w-full transition-all duration-300 ease-out" />
+                </NavLink>
+              ))}
+            </nav>
 
-        <NavLink to="/about" className="flex flex-col items-center gap-1">
-          <p>ABOUT</p>
-          <hr className="w-2/4 border-none h-[1.5px] bg-gray-700 hidden " />
-        </NavLink>
+            {/* Actions */}
+            <div className="flex items-center gap-4 sm:gap-5">
 
-        <NavLink to="/contact" className="flex flex-col items-center gap-1">
-          <p>CONTACT</p>
-          <hr className="w-2/4 border-none h-[1.5px] bg-gray-700 hidden " />
-        </NavLink>
-      </ul>
+              {/* Search */}
+              <button
+                onClick={() => { setShowSearch((prev) => !prev); setSearch(""); }}
+                aria-label="Toggle search"
+                className="group flex items-center justify-center w-8 h-8 rounded-full hover:bg-black/5 transition-colors duration-200"
+              >
+                <img
+                  src={assets.search_icon}
+                  className="w-[17px] opacity-70 group-hover:opacity-100 transition-opacity duration-200"
+                  alt="Search"
+                />
+              </button>
 
-      <div className="flex items-center gap-3 sm:gap-6">
-        <img
-          onClick={() => setShowSearch(true)}
-          src={assets.search_icon}
-          className="w-5 cursor-pointer"
-          alt=""
-        />
-        <div className=" group relative">
-          <Link to={"/login"}>
-            <img
-              src={assets.profile_icon}
-              className="w-5 cursor-pointer"
-              alt=""
-            />
-          </Link>
-          <div className=" group-hover:block hidden absolute dropdown-menu right-0 pt-4 ">
-            <div className="flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 text-gray-500 rounded">
-              <p className="cursor-pointer hover:text-black">My Profile</p>
-              <p className="cursor-pointer hover:text-black">Orders</p>
-              <p className="cursor-pointer hover:text-black">Logout</p>
+              {/* Profile */}
+              <div className="relative" ref={profileRef}>
+                <button
+                  onClick={() => setProfileOpen((p) => !p)}
+                  aria-label="Account"
+                  className="group flex items-center justify-center w-8 h-8 rounded-full hover:bg-black/5 transition-colors duration-200"
+                >
+                  <img
+                    src={assets.profile_icon}
+                    className="w-[17px] opacity-70 group-hover:opacity-100 transition-opacity duration-200"
+                    alt="Account"
+                  />
+                </button>
+
+                {/* Dropdown */}
+                {profileOpen && (
+                  <div
+                    className={`absolute right-0 top-[calc(100%+10px)] w-44 bg-white/95 backdrop-blur-md rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-black/5 overflow-hidden transition-all duration-200 origin-top-right ${
+                      profileOpen ? "scale-100 opacity-100 pointer-events-auto" : "scale-95 opacity-0 pointer-events-none"
+                    }`}
+                  >
+                    {[
+                      { label: "My Profile", action: () => { navigate("/profile"); setProfileOpen(false); } },
+                      { label: "Orders", action: () => { navigate("/orders"); setProfileOpen(false); } },
+                      { label: "Logout", action: logout },
+                    ].map(({ label, action }) => (
+                      <button
+                        key={label}
+                        onClick={action}
+                        className="w-full text-left px-4 py-3 text-[12px] tracking-wide text-[#555] hover:text-[#1A1A1A] hover:bg-[#FAF9F7] transition-colors duration-150 border-b border-black/5 last:border-0"
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Cart */}
+              <Link
+                to="/cart"
+                aria-label="Cart"
+                className="group relative flex items-center justify-center w-8 h-8 rounded-full hover:bg-black/5 transition-colors duration-200"
+              >
+                <img
+                  src={assets.cart_icon}
+                  className="w-[17px] opacity-70 group-hover:opacity-100 transition-opacity duration-200"
+                  alt="Cart"
+                />
+                {getCartCount() > 0 && (
+                  <span className="absolute -right-0.5 -bottom-0.5 min-w-[16px] h-4 px-0.5 flex items-center justify-center bg-[#1A1A1A] text-white text-[9px] font-medium rounded-full leading-none">
+                    {getCartCount()}
+                  </span>
+                )}
+              </Link>
+
+              {/* Mobile hamburger */}
+              <button
+                onClick={() => setVisible(true)}
+                aria-label="Open menu"
+                className="sm:hidden group flex items-center justify-center w-8 h-8 rounded-full hover:bg-black/5 transition-colors duration-200"
+              >
+                <img
+                  src={assets.menu_icon}
+                  className="w-[17px] opacity-70 group-hover:opacity-100 transition-opacity duration-200"
+                  alt="Menu"
+                />
+              </button>
             </div>
           </div>
         </div>
-        <Link to="/cart" className="relative">
-          <img src={assets.cart_icon} className="w-5 min-w-5" alt="" />
-          <p className=" absolute right-[-5px] bottom-[-5px] w-4 text-center leading-4 bg-black text-white aspect-square rounded-full text-[8px] ">
-            {getCartCount()}
-          </p>
-        </Link>
-        <img
-          onClick={() => setVisible(true)}
-          src={assets.menu_icon}
-          className=" w-5 cursor-pointer sm:hidden "
-          alt=""
-        />
-      </div>
 
-      {/* Backdrop overlay */}
-      {visible && (
-        <div
-          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] transition-opacity duration-300"
-          onClick={() => setVisible(false)}
-        />
-      )}
+        {/* ── Thin accent rule at bottom ── */}
+        <div className={`h-px bg-gradient-to-r from-transparent via-black/8 to-transparent transition-opacity duration-300 ${scrolled ? "opacity-100" : "opacity-0"}`} />
+      </header>
 
-      {/* Sidebar panel */}
+      {/* ── Mobile backdrop ── */}
       <div
-        className={`fixed top-0 right-0 h-full z-50 overflow-hidden bg-white/80 backdrop-blur-md shadow-2xl border-l border-white/40 transition-all duration-300 ease-in-out ${visible ? `w-[65%] max-w-[280px]` : `w-0`}`}
+        className={`fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] transition-opacity duration-300 ${
+          visible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={() => setVisible(false)}
+      />
+
+      {/* ── Mobile slide-in drawer ── */}
+      <div
+        className={`fixed top-0 right-0 h-full z-50 w-[70%] max-w-[300px] bg-[#FAF9F7] shadow-2xl transition-transform duration-300 ease-in-out ${
+          visible ? "translate-x-0" : "translate-x-full"
+        }`}
       >
-        <div className="flex flex-col text-gray-700 h-full">
+        <div className="flex flex-col h-full">
+          {/* Close row */}
           <div
             onClick={() => setVisible(false)}
-            className="flex items-center gap-3 p-4 cursor-pointer border-b border-gray-200/60"
+            className="flex items-center gap-3 px-5 py-5 cursor-pointer border-b border-black/8"
           >
-            <img src={assets.dropdown_icon} className="h-3.5 rotate-180 opacity-70" alt="" />
-            <p className="font-medium text-xs tracking-widest text-gray-500">CLOSE</p>
+            <img src={assets.dropdown_icon} className="h-3 rotate-180 opacity-50" alt="" />
+            <span className="text-[10px] tracking-[0.2em] text-[#888] font-medium uppercase">Close</span>
           </div>
-          <NavLink
-            onClick={() => setVisible(false)}
-            className="py-3.5 pl-6 border-b border-gray-100/80 block text-sm font-medium tracking-widest hover:bg-white/60 transition-colors"
-            to="/"
-          >
-            HOME
-          </NavLink>
-          <NavLink
-            onClick={() => setVisible(false)}
-            className="py-3.5 pl-6 border-b border-gray-100/80 block text-sm font-medium tracking-widest hover:bg-white/60 transition-colors"
-            to="/collection"
-          >
-            COLLECTION
-          </NavLink>
-          <NavLink
-            onClick={() => setVisible(false)}
-            className="py-3.5 pl-6 border-b border-gray-100/80 block text-sm font-medium tracking-widest hover:bg-white/60 transition-colors"
-            to="/about"
-          >
-            ABOUT
-          </NavLink>
-          <NavLink
-            onClick={() => setVisible(false)}
-            className="py-3.5 pl-6 border-b border-gray-100/80 block text-sm font-medium tracking-widest hover:bg-white/60 transition-colors"
-            to="/contact"
-          >
-            CONTACT
-          </NavLink>
+
+          <nav className="flex-1 pt-2">
+            {[
+              { to: "/", label: "Home" },
+              { to: "/collection", label: "Collection" },
+              { to: "/about", label: "About" },
+              { to: "/contact", label: "Contact" },
+            ].map(({ to, label }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end={to === "/"}
+                onClick={() => setVisible(false)}
+                className={({ isActive }) =>
+                  `block px-6 py-4 text-[11px] tracking-[0.2em] font-medium uppercase border-b border-black/5 transition-colors duration-150 ${
+                    isActive ? "text-[#1A1A1A] bg-black/3" : "text-[#555] hover:text-[#1A1A1A] hover:bg-black/3"
+                  }`
+                }
+              >
+                {label}
+              </NavLink>
+            ))}
+          </nav>
+
+          {/* Bottom brand mark */}
+          <div className="px-6 pb-8 pt-4">
+            <img src={assets.logo} className="w-24 opacity-30" alt="Velora" />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 

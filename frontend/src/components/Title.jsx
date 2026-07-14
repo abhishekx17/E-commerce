@@ -1,12 +1,19 @@
 import React from "react";
 
+/* Unified section title — matches warm luxury palette */
 const Title = ({ text1, text2 }) => {
   return (
-    <div className="inline-flex gap-2 items-center mb-3">
-      <p className="text-gray-500">
-        {text1} <span className="text-gray-700 font-medium">{text2}</span>
-      </p>
-      <p className="w-8 sm:w-12 h-[1px] sm:h-[2px] bg-gray-700"></p>
+    <div className="flex flex-col items-center gap-2 mb-1">
+      <div className="flex items-center gap-2.5">
+        <span className="h-px w-6 sm:w-8 bg-[#8C7355]" />
+        <p className="text-[10px] sm:text-[11px] tracking-[0.25em] text-[#8C7355] font-medium uppercase whitespace-nowrap">
+          {text1}
+        </p>
+        <span className="h-px w-6 sm:w-8 bg-[#8C7355]" />
+      </div>
+      <h2 className="text-2xl sm:text-3xl font-['Playfair_Display',Georgia,serif] font-medium text-[#1A1A1A] tracking-tight">
+        {text2}
+      </h2>
     </div>
   );
 };

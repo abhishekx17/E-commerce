@@ -1,14 +1,19 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Prata&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Prata&family=Playfair+Display:wght@400;500;600&display=swap');
 
 @import "tailwindcss";
 
-a.active hr{
-    display: block ;
+/* Remove old active-link HR hack — handled per-component now */
+
+* {
+  font-family: 'Outfit', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  box-sizing: border-box;
 }
 
-*{
-    font-family: Outfit;
+body {
+  background-color: #FAF9F7;
+  color: #1A1A1A;
 }
 
 .prata-regular {
@@ -17,13 +22,22 @@ a.active hr{
   font-style: normal;
 }
 
-::-webkit-scrollbar{
-    display: none;
+.playfair {
+  font-family: "Playfair Display", Georgia, serif;
 }
 
-@media(max-width:600px){
-    a.active{
-        background-color: black;
-        color: white;
-    }
+/* Smooth scroll */
+html {
+  scroll-behavior: smooth;
 }
+
+/* Hide scrollbar but keep scroll */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* Selection accent */
+::selection {
+  background-color: #8C7355;
+  color: #fff;
+}

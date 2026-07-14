@@ -1,143 +1,161 @@
-// import { assets } from "assets/assets";
-// import React from "react";
-
-// const Hero = () => {
-//   return (
-//     <div className="flex flex-col sm:flex-row border border-gray-400">
-//       {/* Hero Left Side */}
-//       <div className="w-full sm:w-1/2 flex items-center justify-center py-10 sm:py-0 ">
-//       <div className="text-[#414141]">
-//         <div className="flex items-center gap-2">
-//             <p className="w-8 md:w-11 h-[2px] bg-[#424242]"></p>
-//             <p className="font-medium text-sm md:text-base">Our BEST SELLER</p>
-//         </div>
-//         <h1 className=" prata-regular text-3xl sm:py-3 lg:text-5xl leading-relaxed">Latest Arrivals</h1>
-//         <div className="flex items-center gap-2">
-//             <p className="font-semibold text-sm md:text-base">SHOP NOW</p>
-//             <p className="w-8 md:w-11 h-[1px] bg-[#414141]"></p>
-//         </div>
-//       </div>
-//       </div>
-//       {/* Hero right side */}
-//       <img className="w-full sm:w-1/2" src={assets.hero_img} alt="" />
-//     </div>
-//   );
-// };
-
-// export default Hero;
-
-
 import { assets } from "assets/assets";
 import React, { useState, useEffect, useCallback } from "react";
+import { Link } from "react-router-dom";
 
 const slides = [
   {
     image: assets.hero_img,
-    tagline: "Our Best Seller",
-    title: "Latest Arrivals",
+    tagline: "New Season · 2025",
+    title: "Latest\nArrivals",
+    cta: "Shop Now",
+    ctaLink: "/collection",
   },
   {
     image: assets.hero_img2 || assets.hero_img,
-    tagline: "New Season",
-    title: "Fresh Styles Daily",
+    tagline: "Curated Styles",
+    title: "Fresh\nEvery Day",
+    cta: "Explore",
+    ctaLink: "/collection",
   },
   {
     image: assets.hero_img3 || assets.hero_img,
     tagline: "Limited Time",
-    title: "Up To 40% Off",
+    title: "Up to\n40% Off",
+    cta: "View Deals",
+    ctaLink: "/collection",
   },
 ];
 
 const Hero = () => {
   const [current, setCurrent] = useState(0);
+  const [animating, setAnimating] = useState(false);
+  const [textKey, setTextKey] = useState(0);
+
+  const goTo = useCallback(
+    (index) => {
+      if (animating) return;
+      setAnimating(true);
+      setCurrent(index);
+      setTextKey((k) => k + 1);
+      setTimeout(() => setAnimating(false), 700);
+    },
+    [animating]
+  );
 
   const nextSlide = useCallback(() => {
-    setCurrent((prev) => (prev + 1) % slides.length);
-  }, []);
+    goTo((current + 1) % slides.length);
+  }, [current, goTo]);
 
   const prevSlide = () => {
-    setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
+    goTo((current - 1 + slides.length) % slides.length);
   };
 
+  // Auto-advance
   useEffect(() => {
-    const timer = setInterval(nextSlide, 4000);
+    const timer = setInterval(nextSlide, 5000);
     return () => clearInterval(timer);
   }, [nextSlide]);
 
   return (
-    <div className="relative w-full overflow-hidden border border-gray-200">
+    <div className="relative w-full overflow-hidden bg-[#FAF9F7]" style={{ minHeight: "420px" }}>
+
       {/* Slides track */}
       <div
-        className="flex transition-transform duration-700 ease-in-out"
+        className="flex transition-transform duration-700 ease-[cubic-bezier(0.77,0,0.175,1)]"
         style={{ transform: `translateX(-${current * 100}%)` }}
       >
         {slides.map((slide, index) => (
-          <div
-            key={index}
-            className="flex flex-col sm:flex-row w-full flex-shrink-0"
-          >
-            {/* Left text side */}
-<div className="w-full sm:w-1/2 flex items-center justify-center py-6 sm:py-0 bg-white px-4 sm:px-8">
-  <div className="text-[#414141] text-center sm:text-left max-w-xs sm:max-w-sm">
-    <div className="flex items-center gap-2 justify-center sm:justify-start">
-      <p className="w-6 sm:w-8 md:w-11 h-[2px] bg-[#424242]" />
-      <p className="font-medium text-xs sm:text-sm md:text-base tracking-wide whitespace-nowrap">
-        {slide.tagline}
-      </p>
-    </div>
-    <h1 className="prata-regular text-xl sm:text-3xl py-2 sm:py-3 lg:text-5xl leading-snug sm:leading-relaxed break-words">
-      {slide.title}
-    </h1>
-    <div className="flex items-center gap-2 justify-center sm:justify-start">
-      <p className="font-semibold text-xs sm:text-sm md:text-base cursor-pointer hover:tracking-wide transition-all">
-        SHOP NOW
-      </p>
-      <p className="w-6 sm:w-8 md:w-11 h-[1px] bg-[#414141]" />
-    </div>
-  </div>
-</div>
+          <div key={index} className="flex flex-col sm:flex-row w-full flex-shrink-0">
 
-            {/* Right image side */}
-            <div className="w-full sm:w-1/2 h-[200px] sm:h-auto">
+            {/* ── Left: text panel ── */}
+            <div className="w-full sm:w-1/2 flex items-center justify-center py-12 sm:py-16 px-8 sm:px-12 lg:px-16 bg-[#FAF9F7] order-2 sm:order-1">
+              <div
+                key={index === current ? textKey : index}
+                className="max-w-sm text-center sm:text-left"
+                style={{
+                  animation: index === current ? "heroFadeUp 0.6s ease-out both" : "none",
+                }}
+              >
+                {/* Eyebrow */}
+                <div className="flex items-center gap-2.5 justify-center sm:justify-start mb-5">
+                  <span className="h-px w-8 bg-[#8C7355]" />
+                  <span className="text-[10px] tracking-[0.25em] text-[#8C7355] font-medium uppercase whitespace-nowrap">
+                    {slide.tagline}
+                  </span>
+                </div>
+
+                {/* Headline */}
+                <h1
+                  className="font-['Playfair_Display',Georgia,serif] text-[2.4rem] sm:text-[2.8rem] lg:text-[3.6rem] leading-[1.08] text-[#1A1A1A] mb-6 tracking-tight whitespace-pre-line"
+                >
+                  {slide.title}
+                </h1>
+
+                {/* CTA */}
+                <Link
+                  to={slide.ctaLink}
+                  className="inline-flex items-center gap-3 group"
+                >
+                  <span className="text-[11px] tracking-[0.22em] font-semibold uppercase text-[#1A1A1A] group-hover:text-[#8C7355] transition-colors duration-200">
+                    {slide.cta}
+                  </span>
+                  <span className="h-px bg-[#1A1A1A] group-hover:bg-[#8C7355] transition-all duration-300 w-8 group-hover:w-14" />
+                </Link>
+              </div>
+            </div>
+
+            {/* ── Right: image panel ── */}
+            <div className="w-full sm:w-1/2 h-[260px] sm:h-[520px] lg:h-[600px] overflow-hidden order-1 sm:order-2">
               <img
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover transition-transform duration-[6000ms] ease-linear scale-[1.04] hover:scale-[1.06]"
                 src={slide.image}
                 alt={slide.title}
+                style={{ transform: index === current ? "scale(1)" : "scale(1.04)" }}
               />
             </div>
           </div>
         ))}
       </div>
 
-      {/* Arrows */}
-      <button
-        onClick={prevSlide}
-        className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white text-[#414141] w-9 h-9 rounded-full flex items-center justify-center shadow-md transition"
-        aria-label="Previous slide"
-      >
-        ‹
-      </button>
-      <button
-        onClick={nextSlide}
-        className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/70 hover:bg-white text-[#414141] w-9 h-9 rounded-full flex items-center justify-center shadow-md transition"
-        aria-label="Next slide"
-      >
-        ›
-      </button>
+      {/* ── Nav arrows ── */}
+      {[
+        { dir: "prev", onClick: prevSlide, icon: "‹", position: "left-4" },
+        { dir: "next", onClick: nextSlide, icon: "›", position: "right-4" },
+      ].map(({ dir, onClick, icon, position }) => (
+        <button
+          key={dir}
+          onClick={onClick}
+          aria-label={dir === "prev" ? "Previous slide" : "Next slide"}
+          className={`absolute ${position} top-1/2 -translate-y-1/2 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/80 backdrop-blur-sm border border-black/8 flex items-center justify-center text-[#1A1A1A] text-2xl shadow-[0_2px_12px_rgba(0,0,0,0.12)] hover:bg-white hover:shadow-[0_4px_20px_rgba(0,0,0,0.15)] transition-all duration-200 hover:scale-105 active:scale-95`}
+        >
+          {icon}
+        </button>
+      ))}
 
-      {/* Dots */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+      {/* ── Progress dots ── */}
+      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
         {slides.map((_, index) => (
           <button
             key={index}
-            onClick={() => setCurrent(index)}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              current === index ? "w-6 bg-[#414141]" : "w-2 bg-gray-300"
-            }`}
+            onClick={() => goTo(index)}
             aria-label={`Go to slide ${index + 1}`}
+            className={`rounded-full transition-all duration-400 ${
+              current === index
+                ? "w-6 h-1.5 bg-[#1A1A1A]"
+                : "w-1.5 h-1.5 bg-[#1A1A1A]/25 hover:bg-[#1A1A1A]/50"
+            }`}
           />
         ))}
       </div>
+
+      {/* ── Keyframe style ── */}
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap');
+        @keyframes heroFadeUp {
+          from { opacity: 0; transform: translateY(18px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 };

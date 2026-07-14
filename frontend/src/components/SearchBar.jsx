@@ -8,14 +8,21 @@ const SearchBar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const inputRef = useRef(null);
+  const [visible, setVisible] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     if (showSearch) {
-      requestAnimationFrame(() => setMounted(true));
-      setTimeout(() => inputRef.current?.focus(), 60);
+      setMounted(true);
+      const raf = requestAnimationFrame(() =>
+        requestAnimationFrame(() => setVisible(true))
+      );
+      setTimeout(() => inputRef.current?.focus(), 80);
+      return () => cancelAnimationFrame(raf);
     } else {
-      setMounted(false);
+      setVisible(false);
+      const t = setTimeout(() => setMounted(false), 300);
+      return () => clearTimeout(t);
     }
   }, [showSearch]);
 
@@ -33,43 +40,63 @@ const SearchBar = () => {
     return () => window.removeEventListener("keydown", handleKey);
   }, [showSearch]);
 
-  if (!showSearch) return null;
+  if (!mounted) return null;
 
   return (
     <div
-      className={`border-b border-gray-200 bg-white transition-all duration-300 ease-in-out overflow-hidden ${
-        mounted ? "max-h-24 opacity-100" : "max-h-0 opacity-0"
-      }`}
+      className="sticky top-[62px] sm:top-[70px] z-30 overflow-hidden"
+      style={{
+        transition: "max-height 0.3s ease, opacity 0.3s ease, transform 0.3s ease",
+        maxHeight: visible ? "72px" : "0px",
+        opacity: visible ? 1 : 0,
+        transform: visible ? "translateY(0)" : "translateY(-6px)",
+      }}
     >
-      <div className="flex items-center justify-center gap-2 py-3 px-3 sm:px-4 sm:py-4">
-        {/* Search bar box */}
-        <div className="flex items-center w-full max-w-xl border border-gray-300 rounded-full px-4 py-2 gap-2 focus-within:border-gray-600 transition-colors duration-200 bg-white">
-          <img src={assets.search_icon} alt="" className="w-4 opacity-50 flex-shrink-0" />
-          <input
-            ref={inputRef}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            type="text"
-            className="flex-1 min-w-0 outline-none text-sm text-gray-800 placeholder-gray-400 bg-white"
-            placeholder="Search products..."
-          />
-          {search && (
-            <button
-              onClick={() => { setSearch(""); inputRef.current?.focus(); }}
-              className="text-gray-400 hover:text-gray-700 transition-colors text-sm flex-shrink-0"
-            >
-              ✕
-            </button>
-          )}
-        </div>
+      <div className="bg-[#FAF9F7]/96 backdrop-blur-md border-b border-black/8 shadow-[0_4px_20px_rgba(0,0,0,0.06)]">
+        {/* Constrained to same padding as Navbar */}
+        {/* Pill + Cancel grouped together and centred as a unit */}
+        <div className="py-2.5 flex justify-center px-3 sm:px-[5vw] md:px-[7vw] lg:px-[9vw]">
+          <div className="flex items-center gap-2">
 
-        {/* Close */}
-        <button
-          onClick={() => { setShowSearch(false); setSearch(""); }}
-          className="text-gray-500 hover:text-black transition-colors text-xs sm:text-sm flex-shrink-0 whitespace-nowrap"
-        >
-          Cancel
-        </button>
+            {/* Search pill */}
+            <div
+              className="flex items-center w-[200px] xs:w-[240px] sm:w-[300px] md:w-[340px] gap-2 px-3 sm:px-4 py-2 rounded-full bg-white border transition-colors duration-200"
+              style={{ borderColor: search ? "#8C7355" : "rgba(0,0,0,0.12)" }}
+            >
+              <img
+                src={assets.search_icon}
+                alt=""
+                className="w-[13px] sm:w-[15px] flex-shrink-0"
+                style={{ opacity: search ? 0.9 : 0.45 }}
+              />
+              <input
+                ref={inputRef}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                type="text"
+                className="flex-1 min-w-0 w-0 outline-none text-[12px] sm:text-[13px] text-[#1A1A1A] placeholder-[#ABABAB] bg-transparent tracking-wide"
+                placeholder="Search…"
+              />
+              {search && (
+                <button
+                  onClick={() => { setSearch(""); inputRef.current?.focus(); }}
+                  className="flex-shrink-0 w-4 h-4 flex items-center justify-center rounded-full bg-[#DADADA] hover:bg-[#8C7355] transition-colors duration-200 text-white text-[9px] leading-none"
+                  aria-label="Clear"
+                >
+                  ✕
+                </button>
+              )}
+            </div>
+
+            {/* Cancel — sits immediately right of the pill */}
+            <button
+              onClick={() => { setShowSearch(false); setSearch(""); }}
+              className="flex-shrink-0 text-[10px] sm:text-[11px] tracking-[0.12em] uppercase font-medium text-[#888] hover:text-[#1A1A1A] px-2 sm:px-3 py-2 rounded-full hover:bg-black/5 transition-all duration-200 whitespace-nowrap"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
