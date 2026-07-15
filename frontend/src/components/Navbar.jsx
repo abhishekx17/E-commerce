@@ -7,7 +7,8 @@ const Navbar = () => {
   const [visible, setVisible] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
-  const { setShowSearch, getCartCount } = useContext(ShopContext);
+  const { setShowSearch, getCartCount, setSearch, token, setToken, setCartItems } =
+    useContext(ShopContext);
   const profileRef = useRef(null);
   const navigate = useNavigate();
 
@@ -32,11 +33,15 @@ const Navbar = () => {
   // Lock body scroll when mobile menu open
   useEffect(() => {
     document.body.style.overflow = visible ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [visible]);
 
   const logout = () => {
     localStorage.removeItem("token");
+    setToken("");
+    setCartItems({});
     navigate("/login");
     setProfileOpen(false);
   };
@@ -56,7 +61,6 @@ const Navbar = () => {
       >
         <div className="px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw]">
           <div className="flex items-center justify-between h-[62px] sm:h-[70px]">
-
             {/* Logo */}
             <Link to="/" className="flex-shrink-0">
               <img
@@ -74,7 +78,12 @@ const Navbar = () => {
                 { to: "/about", label: "About" },
                 { to: "/contact", label: "Contact" },
               ].map(({ to, label }) => (
-                <NavLink key={to} to={to} className={navLinkClass} end={to === "/"}>
+                <NavLink
+                  key={to}
+                  to={to}
+                  className={navLinkClass}
+                  end={to === "/"}
+                >
                   {label}
                   {/* animated underline */}
                   <span className="absolute bottom-0 left-0 h-[1.5px] bg-[#8C7355] w-0 group-hover:w-full transition-all duration-300 ease-out" />
@@ -84,10 +93,12 @@ const Navbar = () => {
 
             {/* Actions */}
             <div className="flex items-center gap-4 sm:gap-5">
-
               {/* Search */}
               <button
-                onClick={() => { setShowSearch((prev) => !prev); setSearch(""); }}
+                onClick={() => {
+                  setShowSearch((prev) => !prev);
+                  setSearch("");
+                }}
                 aria-label="Toggle search"
                 className="group flex items-center justify-center w-8 h-8 rounded-full hover:bg-black/5 transition-colors duration-200"
               >
@@ -116,22 +127,48 @@ const Navbar = () => {
                 {profileOpen && (
                   <div
                     className={`absolute right-0 top-[calc(100%+10px)] w-44 bg-white/95 backdrop-blur-md rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.12)] border border-black/5 overflow-hidden transition-all duration-200 origin-top-right ${
-                      profileOpen ? "scale-100 opacity-100 pointer-events-auto" : "scale-95 opacity-0 pointer-events-none"
+                      profileOpen
+                        ? "scale-100 opacity-100 pointer-events-auto"
+                        : "scale-95 opacity-0 pointer-events-none"
                     }`}
                   >
-                    {[
-                      { label: "My Profile", action: () => { navigate("/profile"); setProfileOpen(false); } },
-                      { label: "Orders", action: () => { navigate("/orders"); setProfileOpen(false); } },
-                      { label: "Logout", action: logout },
-                    ].map(({ label, action }) => (
+                    {token ? (
+                      [
+                        {
+                          label: "My Profile",
+                          action: () => {
+                            navigate("/profile");
+                            setProfileOpen(false);
+                          },
+                        },
+                        {
+                          label: "Orders",
+                          action: () => {
+                            navigate("/orders");
+                            setProfileOpen(false);
+                          },
+                        },
+                        { label: "Logout", action: logout },
+                      ].map(({ label, action }) => (
+                        <button
+                          key={label}
+                          onClick={action}
+                          className="w-full text-left px-4 py-3 text-[12px] tracking-wide text-[#555] hover:text-[#1A1A1A] hover:bg-[#FAF9F7] transition-colors duration-150 border-b border-black/5 last:border-0"
+                        >
+                          {label}
+                        </button>
+                      ))
+                    ) : (
                       <button
-                        key={label}
-                        onClick={action}
-                        className="w-full text-left px-4 py-3 text-[12px] tracking-wide text-[#555] hover:text-[#1A1A1A] hover:bg-[#FAF9F7] transition-colors duration-150 border-b border-black/5 last:border-0"
+                        onClick={() => {
+                          navigate("/login");
+                          setProfileOpen(false);
+                        }}
+                        className="w-full text-left px-4 py-3 text-[12px] tracking-wide text-[#555] hover:text-[#1A1A1A] hover:bg-[#FAF9F7] transition-colors duration-150"
                       >
-                        {label}
+                        Login
                       </button>
-                    ))}
+                    )}
                   </div>
                 )}
               </div>
@@ -171,13 +208,17 @@ const Navbar = () => {
         </div>
 
         {/* ── Thin accent rule at bottom ── */}
-        <div className={`h-px bg-gradient-to-r from-transparent via-black/8 to-transparent transition-opacity duration-300 ${scrolled ? "opacity-100" : "opacity-0"}`} />
+        <div
+          className={`h-px bg-gradient-to-r from-transparent via-black/8 to-transparent transition-opacity duration-300 ${scrolled ? "opacity-100" : "opacity-0"}`}
+        />
       </header>
 
       {/* ── Mobile backdrop ── */}
       <div
         className={`fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] transition-opacity duration-300 ${
-          visible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          visible
+            ? "opacity-100 pointer-events-auto"
+            : "opacity-0 pointer-events-none"
         }`}
         onClick={() => setVisible(false)}
       />
@@ -194,8 +235,14 @@ const Navbar = () => {
             onClick={() => setVisible(false)}
             className="flex items-center gap-3 px-5 py-5 cursor-pointer border-b border-black/8"
           >
-            <img src={assets.dropdown_icon} className="h-3 rotate-180 opacity-50" alt="" />
-            <span className="text-[10px] tracking-[0.2em] text-[#888] font-medium uppercase">Close</span>
+            <img
+              src={assets.dropdown_icon}
+              className="h-3 rotate-180 opacity-50"
+              alt=""
+            />
+            <span className="text-[10px] tracking-[0.2em] text-[#888] font-medium uppercase">
+              Close
+            </span>
           </div>
 
           <nav className="flex-1 pt-2">
@@ -212,7 +259,9 @@ const Navbar = () => {
                 onClick={() => setVisible(false)}
                 className={({ isActive }) =>
                   `block px-6 py-4 text-[11px] tracking-[0.2em] font-medium uppercase border-b border-black/5 transition-colors duration-150 ${
-                    isActive ? "text-[#1A1A1A] bg-black/3" : "text-[#555] hover:text-[#1A1A1A] hover:bg-black/3"
+                    isActive
+                      ? "text-[#1A1A1A] bg-black/3"
+                      : "text-[#555] hover:text-[#1A1A1A] hover:bg-black/3"
                   }`
                 }
               >
