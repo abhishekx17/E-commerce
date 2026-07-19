@@ -15,8 +15,26 @@ connectDB()
 connectCloudinary()
 
 // Middlewares
+const allowedOrigins = [
+    'http://localhost:5173',
+    'https://velora-beta-three.vercel.app',
+    ...(process.env.CORS_ORIGINS
+        ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)
+        : [])
+]
+
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            return callback(null, true)
+        }
+
+        callback(null, false)
+    },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'token']
+}))
 app.use(express.json())
-app.use(cors())
 
 // Api endpoints
 
@@ -29,4 +47,8 @@ app.get('/', (req,res)=>{
     res.send("API Working")
 })
 
-app.listen(port, ()=>console.log('Server started on PORT : ' + port))
+if (!process.env.VERCEL) {
+    app.listen(port, ()=>console.log('Server started on PORT : ' + port))
+}
+
+export default app

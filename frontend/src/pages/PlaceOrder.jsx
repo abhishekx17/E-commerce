@@ -3,7 +3,6 @@ import CartTotal from "components/CartTotal";
 import Title from "components/Title";
 import { ShopContext } from "context/ShopContext";
 import React, { useContext, useState } from "react";
-import Product from "./Product";
 import axios from "axios";
 import { toast } from "react-toastify";
 
@@ -39,9 +38,67 @@ const PlaceOrder = () => {
     setFormData((data) => ({ ...data, [name]: value }));
   };
 
+  const initPay = (order, key) => {
+    if (!window.Razorpay) {
+      toast.error("Razorpay checkout failed to load. Please try again.");
+      setIsLoading(false);
+      return;
+    }
+
+    const options = {
+      key,
+      amount: order.amount,
+      currency: order.currency,
+      name: "Velora",
+      description: "Order Payment",
+      order_id: order.id,
+      prefill: {
+        name: `${formData.firstname} ${formData.lastname}`.trim(),
+        email: formData.email,
+        contact: formData.phone,
+      },
+      handler: async (response) => {
+        try {
+          const { data } = await axios.post(
+            backendUrl + "/api/order/verifyRazorpay",
+            response,
+            { headers: { token } },
+          );
+
+          if (data.success) {
+            setCartItems({});
+            toast.success("Payment successful");
+            navigate("/orders");
+          } else {
+            toast.error(data.message);
+          }
+        } catch (error) {
+          console.log(error);
+          toast.error(error.message);
+        } finally {
+          setIsLoading(false);
+        }
+      },
+      modal: {
+        ondismiss: () => setIsLoading(false),
+      },
+      theme: {
+        color: "#111827",
+      },
+    };
+
+    const razorpay = new window.Razorpay(options);
+    razorpay.on("payment.failed", (response) => {
+      toast.error(response.error.description || "Payment failed");
+      setIsLoading(false);
+    });
+    razorpay.open();
+  };
+
   const onSubmitHandler = async (event) => {
     event.preventDefault();
     setIsLoading(true);
+    let shouldResetLoading = true;
 
     try {
       let orderItems = [];
@@ -81,6 +138,22 @@ const PlaceOrder = () => {
             toast.error(response.data.message);
           }
           break;
+          
+        case "razorpay":
+          const responseRazorpay = await axios.post(
+            backendUrl + "/api/order/razorpay",
+            orderData,
+            { headers: { token } },
+          );
+
+          if (responseRazorpay.data.success) {
+            shouldResetLoading = false;
+            initPay(responseRazorpay.data.order, responseRazorpay.data.key);
+            return;
+          } else {
+            toast.error(responseRazorpay.data.message);
+          }
+          break;
 
         default:
           break;
@@ -89,7 +162,9 @@ const PlaceOrder = () => {
       console.log(error);
       toast.error(error.message);
     } finally {
-      setIsLoading(false);
+      if (shouldResetLoading) {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -148,7 +223,7 @@ const PlaceOrder = () => {
             required
             onChange={onChangeHandler}
             name="city"
-            value={formData.ci}
+            value={formData.city}
             className="border border-gray-300 rounded py-1.5 px-3.5  w-full"
             type="text"
             placeholder="City"
@@ -208,15 +283,6 @@ const PlaceOrder = () => {
           {/*---------Payment Method Selection------------ */}
 
           <div className="flex gap-3 flex-col lg:flex-row">
-            <div
-              onClick={() => setMethod("stripe")}
-              className="flex items-center gap-3 p-2 px-3 cursor-pointer"
-            >
-              <p
-                className={`min-w-3.5 h-3.5 border rounded-full ${method === "stripe" ? "bg-green-400" : ""}`}
-              ></p>
-              <img src={assets.stripe_logo} alt="" className="h-5 mx-4" />
-            </div>
             <div
               onClick={() => setMethod("razorpay")}
               className="flex items-center gap-3 p-2 px-3 cursor-pointer"
