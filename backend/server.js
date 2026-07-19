@@ -17,23 +17,34 @@ connectCloudinary()
 // Middlewares
 const allowedOrigins = [
     'http://localhost:5173',
+    'http://localhost:5174',
     'https://velora-beta-three.vercel.app',
+    'https://e-commerce-nu-sand-91.vercel.app',
     ...(process.env.CORS_ORIGINS
         ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)
         : [])
-]
+].map((origin) => origin.replace(/\/+$/, ''))
 
-app.use(cors({
+const corsOptions = {
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin || allowedOrigins.includes(origin.replace(/\/+$/, ''))) {
             return callback(null, true)
         }
 
         callback(null, false)
     },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'token']
-}))
+    allowedHeaders: ['Content-Type', 'Authorization', 'token'],
+    optionsSuccessStatus: 204
+}
+
+app.use(cors(corsOptions))
+app.use((req, res, next) => {
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(204)
+    }
+    next()
+})
 app.use(express.json())
 
 // Api endpoints
