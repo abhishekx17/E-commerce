@@ -5,6 +5,7 @@ import { Route, Routes } from "react-router-dom";
 import Add from "./pages/Add";
 import List from "./pages/List";
 import Orders from "./pages/Orders";
+import Dashboard from "./pages/Dashboard";
 import Login from "./components/Login";
 import { ToastContainer } from "react-toastify";
 
@@ -22,18 +23,18 @@ const App = () => {
   }, [token]);
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <ToastContainer />
+    <div className="min-h-screen" style={{ backgroundColor: "#FAF9F7" }}>
+      <ToastContainer position="top-right" autoClose={2500} />
       {token === "" ? (
         <Login setToken={setToken} />
       ) : (
         <>
           <Navbar setToken={setToken} />
-          <hr />
           <div className="flex w-full">
             <Sidebar />
-            <div className="flex-1 min-w-0 px-3 sm:px-6 lg:ml-[max(5vw,25px)] my-6 sm:my-8 text-gray-600 text-base overflow-auto">
+            <div className="flex-1 min-w-0 px-4 sm:px-8 lg:px-10 my-8 overflow-auto">
               <Routes>
+                <Route path="/" element={<Dashboard token={token} />} />
                 <Route path="/add" element={<Add token={token} />} />
                 <Route path="/list" element={<List token={token} />} />
                 <Route path="/orders" element={<Orders token={token} />} />

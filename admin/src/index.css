@@ -1,19 +1,60 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Prata&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Prata&family=Playfair+Display:wght@400;500;600&display=swap');
+
 @import "tailwindcss";
 
-
-*{
-    font-family: Outfit
+/* ── Base ── */
+* {
+  font-family: 'Outfit', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  box-sizing: border-box;
 }
 
-select,input,textarea{
-    border: 1px solid #c2c2c2;
-    outline-color: #c586a5;
-    border-radius: 4px;
+body {
+  background-color: #FAF9F7;
+  color: #1A1A1A;
 }
 
+/* ── Typography helpers ── */
+.prata-regular {
+  font-family: "Prata", serif;
+  font-weight: 400;
+  font-style: normal;
+}
 
-.active{
-    background-color: #ffebf5;
-    border-color: #c586a5;
-} 
+.playfair {
+  font-family: "Playfair Display", Georgia, serif;
+}
+
+/* ── Smooth scroll ── */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ── Hide scrollbar but keep scroll ── */
+::-webkit-scrollbar {
+  display: none;
+}
+
+/* ── Selection accent ── */
+::selection {
+  background-color: #8C7355;
+  color: #fff;
+}
+
+/* ── Form elements — base ── */
+select,
+input,
+textarea {
+  border: 1px solid #d4c9b8;
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+select:focus,
+input:focus,
+textarea:focus {
+  border-color: #8C7355;
+  box-shadow: 0 0 0 3px rgba(140, 115, 85, 0.12);
+}

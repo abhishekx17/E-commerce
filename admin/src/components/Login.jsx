@@ -3,14 +3,17 @@ import React, { useState } from "react";
 import { backendUrl } from "../App";
 import { toast } from "react-toastify";
 import { Mail, Lock } from "lucide-react";
+import { assets } from "../assets/assets";
 
 const Login = ({ setToken }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const onSubmitHandler = async (e) => {
     try {
       e.preventDefault();
+      setLoading(true);
       const response = await axios.post(backendUrl + "/api/user/admin", {
         email,
         password,
@@ -34,37 +37,78 @@ const Login = ({ setToken }) => {
         hideProgressBar: false,
         theme: "light",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center w-full bg-gray-50 px-4">
-      <div className="bg-white shadow-lg rounded-2xl px-8 py-10 w-full max-w-sm border border-gray-100">
+    <div
+      className="min-h-screen flex items-center justify-center w-full px-4"
+      style={{ backgroundColor: "#FAF9F7" }}
+    >
+      {/* Subtle background texture blobs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div
+          className="absolute -top-40 -right-40 w-96 h-96 rounded-full opacity-30"
+          style={{ background: 'radial-gradient(circle, rgba(140,115,85,0.15) 0%, transparent 70%)' }}
+        />
+        <div
+          className="absolute -bottom-40 -left-40 w-96 h-96 rounded-full opacity-30"
+          style={{ background: 'radial-gradient(circle, rgba(140,115,85,0.1) 0%, transparent 70%)' }}
+        />
+      </div>
+
+      <div
+        className="relative w-full max-w-sm rounded-2xl px-8 py-10"
+        style={{
+          background: 'rgba(255,255,255,0.85)',
+          backdropFilter: 'blur(16px)',
+          border: '1px solid rgba(0,0,0,0.06)',
+          boxShadow: '0 16px 48px rgba(0,0,0,0.1)',
+        }}
+      >
+        {/* Logo */}
+        <div className="flex justify-center mb-6">
+          <img src={assets.logo} alt="Velora" className="h-10 w-auto object-contain" />
+        </div>
+
+        {/* Heading */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Admin Panel</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Sign in to manage your store
+          <h1 className="text-2xl font-semibold text-[#1A1A1A] prata-regular">
+            Welcome Back
+          </h1>
+          <p className="text-sm mt-1.5" style={{ color: '#888' }}>
+            Sign in to your admin dashboard
           </p>
         </div>
 
         <form onSubmit={onSubmitHandler} className="space-y-5">
+          {/* Email */}
           <div>
             <label
               htmlFor="email"
-              className="text-sm font-medium text-gray-700 mb-1.5 block"
+              className="block text-xs font-semibold uppercase tracking-widest mb-1.5"
+              style={{ color: '#8C7355' }}
             >
               Email Address
             </label>
             <div className="relative">
               <Mail
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2"
+                size={16}
+                style={{ color: '#aaa' }}
               />
               <input
                 id="email"
                 onChange={(e) => setEmail(e.target.value)}
                 value={email}
-                className="rounded-lg w-full pl-10 pr-3 py-2.5 border border-gray-300 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500 transition-colors"
+                className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl"
+                style={{
+                  border: '1px solid rgba(0,0,0,0.12)',
+                  background: 'rgba(255,255,255,0.9)',
+                  color: '#1A1A1A',
+                }}
                 type="email"
                 placeholder="your@email.com"
                 required
@@ -72,23 +116,31 @@ const Login = ({ setToken }) => {
             </div>
           </div>
 
+          {/* Password */}
           <div>
             <label
               htmlFor="password"
-              className="text-sm font-medium text-gray-700 mb-1.5 block"
+              className="block text-xs font-semibold uppercase tracking-widest mb-1.5"
+              style={{ color: '#8C7355' }}
             >
               Password
             </label>
             <div className="relative">
               <Lock
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
-                size={18}
+                className="absolute left-3 top-1/2 -translate-y-1/2"
+                size={16}
+                style={{ color: '#aaa' }}
               />
               <input
                 id="password"
                 onChange={(e) => setPassword(e.target.value)}
                 value={password}
-                className="rounded-lg w-full pl-10 pr-3 py-2.5 border border-gray-300 outline-none focus:border-gray-500 focus:ring-1 focus:ring-gray-500 transition-colors"
+                className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl"
+                style={{
+                  border: '1px solid rgba(0,0,0,0.12)',
+                  background: 'rgba(255,255,255,0.9)',
+                  color: '#1A1A1A',
+                }}
                 type="password"
                 placeholder="Enter your password"
                 required
@@ -96,13 +148,29 @@ const Login = ({ setToken }) => {
             </div>
           </div>
 
+          {/* Submit */}
           <button
-            className="mt-2 w-full py-2.5 px-4 rounded-lg text-white bg-black hover:bg-gray-800 active:scale-[0.99] transition-all font-medium"
+            className="w-full py-2.5 px-4 rounded-xl text-white text-sm font-semibold tracking-wide transition-all duration-200 mt-2 flex items-center justify-center gap-2"
+            style={{
+              backgroundColor: loading ? '#b0a090' : '#8C7355',
+              cursor: loading ? 'not-allowed' : 'pointer',
+            }}
+            onMouseEnter={e => { if (!loading) e.currentTarget.style.backgroundColor = '#7a6348'; }}
+            onMouseLeave={e => { if (!loading) e.currentTarget.style.backgroundColor = '#8C7355'; }}
             type="submit"
+            disabled={loading}
           >
-            Login
+            {loading && (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            )}
+            {loading ? 'Signing in…' : 'Sign In'}
           </button>
         </form>
+
+        {/* Footer note */}
+        <p className="text-center text-[11px] mt-6" style={{ color: '#bbb' }}>
+          Velora Admin · Restricted Access
+        </p>
       </div>
     </div>
   );
