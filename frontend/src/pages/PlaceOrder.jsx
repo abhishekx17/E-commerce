@@ -6,6 +6,61 @@ import React, { useContext, useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
+const RAZORPAY_CHECKOUT_SRC = "https://checkout.razorpay.com/v1/checkout.js";
+let razorpayCheckoutPromise;
+
+const loadRazorpayCheckout = () => {
+  if (window.Razorpay) {
+    return Promise.resolve(true);
+  }
+
+  if (razorpayCheckoutPromise) {
+    return razorpayCheckoutPromise;
+  }
+
+  razorpayCheckoutPromise = new Promise((resolve) => {
+    const existingScript = document.querySelector(
+      `script[src="${RAZORPAY_CHECKOUT_SRC}"]`,
+    );
+
+    if (existingScript) {
+      if (existingScript.dataset.loaded === "true") {
+        resolve(Boolean(window.Razorpay));
+        return;
+      }
+
+      existingScript.addEventListener("load", () => resolve(true), {
+        once: true,
+      });
+      existingScript.addEventListener(
+        "error",
+        () => {
+          razorpayCheckoutPromise = undefined;
+          resolve(false);
+        },
+        { once: true },
+      );
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = RAZORPAY_CHECKOUT_SRC;
+    script.async = true;
+    script.onload = () => {
+      script.dataset.loaded = "true";
+      resolve(true);
+    };
+    script.onerror = () => {
+      razorpayCheckoutPromise = undefined;
+      resolve(false);
+    };
+
+    document.body.appendChild(script);
+  });
+
+  return razorpayCheckoutPromise;
+};
+
 const PlaceOrder = () => {
   const [method, setMethod] = useState("cod");
   const [isLoading, setIsLoading] = useState(false);
@@ -38,11 +93,13 @@ const PlaceOrder = () => {
     setFormData((data) => ({ ...data, [name]: value }));
   };
 
-  const initPay = (order, key) => {
-    if (!window.Razorpay) {
+  const initPay = async (order, key) => {
+    const isRazorpayLoaded = await loadRazorpayCheckout();
+
+    if (!isRazorpayLoaded || !window.Razorpay) {
       toast.error("Razorpay checkout failed to load. Please try again.");
       setIsLoading(false);
-      return;
+      return false;
     }
 
     const options = {
@@ -93,10 +150,15 @@ const PlaceOrder = () => {
       setIsLoading(false);
     });
     razorpay.open();
+    return true;
   };
 
   const onSubmitHandler = async (event) => {
     event.preventDefault();
+    if (isLoading) {
+      return;
+    }
+
     setIsLoading(true);
     let shouldResetLoading = true;
 
@@ -147,8 +209,10 @@ const PlaceOrder = () => {
           );
 
           if (responseRazorpay.data.success) {
-            shouldResetLoading = false;
-            initPay(responseRazorpay.data.order, responseRazorpay.data.key);
+            shouldResetLoading = !(await initPay(
+              responseRazorpay.data.order,
+              responseRazorpay.data.key,
+            ));
             return;
           } else {
             toast.error(responseRazorpay.data.message);
