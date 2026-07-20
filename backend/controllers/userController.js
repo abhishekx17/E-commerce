@@ -101,4 +101,65 @@ const adminLogin = async (req, res) => {
   }
 };
 
-export { loginUser, registerUser, adminLogin };
+// Get logged-in user's profile
+const getProfile = async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const user = await userModel.findById(userId).select("-password -cartData");
+    if (!user) {
+      return res.json({ success: false, message: "User not found" });
+    }
+    res.json({ success: true, user });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// Update logged-in user's profile (name only)
+const updateProfile = async (req, res) => {
+  try {
+    const { userId, name } = req.body;
+    if (!name || name.trim().length < 2) {
+      return res.json({ success: false, message: "Name must be at least 2 characters" });
+    }
+    await userModel.findByIdAndUpdate(userId, { name: name.trim() });
+    res.json({ success: true, message: "Profile updated" });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+// Change logged-in user's password
+const changePassword = async (req, res) => {
+  try {
+    const { userId, currentPassword, newPassword } = req.body;
+
+    const user = await userModel.findById(userId);
+    if (!user) {
+      return res.json({ success: false, message: "User not found" });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      return res.json({ success: false, message: "Current password is incorrect" });
+    }
+
+    if (newPassword.length < 8) {
+      return res.json({ success: false, message: "New password must be at least 8 characters" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    await userModel.findByIdAndUpdate(userId, { password: hashedPassword });
+
+    res.json({ success: true, message: "Password changed successfully" });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+};
+
+export { loginUser, registerUser, adminLogin, getProfile, updateProfile, changePassword };
+
