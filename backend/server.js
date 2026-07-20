@@ -15,19 +15,26 @@ connectDB()
 connectCloudinary()
 
 // Middlewares
+const normalizeOrigin = (origin) => origin.replace(/\/+$/, '')
+
+const parseOrigins = (origins = '') =>
+    origins
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean)
+        .map(normalizeOrigin)
+
 const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:5174',
-    'https://velora-beta-three.vercel.app',
-    'https://e-commerce-nu-sand-91.vercel.app',
-    ...(process.env.CORS_ORIGINS
-        ? process.env.CORS_ORIGINS.split(',').map((origin) => origin.trim()).filter(Boolean)
-        : [])
-].map((origin) => origin.replace(/\/+$/, ''))
+    ...parseOrigins(process.env.CORS_ORIGINS)
+]
+
+const allowedOriginSet = new Set(allowedOrigins.map(normalizeOrigin))
 
 const corsOptions = {
     origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin.replace(/\/+$/, ''))) {
+        if (!origin || allowedOriginSet.has(normalizeOrigin(origin))) {
             return callback(null, true)
         }
 
@@ -39,12 +46,6 @@ const corsOptions = {
 }
 
 app.use(cors(corsOptions))
-app.use((req, res, next) => {
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(204)
-    }
-    next()
-})
 app.use(express.json())
 
 // Api endpoints
