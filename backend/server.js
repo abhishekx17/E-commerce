@@ -65,4 +65,5 @@ if (!process.env.VERCEL) {
     app.listen(port, ()=>console.log('Server started on PORT : ' + port))
 }
 
+// Server loaded with updated env variables
 export default app
