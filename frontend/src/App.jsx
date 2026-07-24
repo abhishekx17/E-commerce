@@ -18,16 +18,16 @@ import { ToastContainer } from "react-toastify";
 
 const App = () => {
   return (
-    <div className="bg-[#FAF9F7] min-h-screen">
-      <ToastContainer position="top-right" autoClose={2500} />
+    <div className="bg-[#FAF9F6] min-h-screen text-[#121212] selection:bg-[#8C7355] selection:text-white relative">
+      <ToastContainer position="top-right" autoClose={2500} theme="light" />
       <ScrollToTop />
 
-      {/* Navbar is sticky inside its own component; SearchBar is also sticky below it */}
+      {/* Floating Animated Navbar */}
       <Navbar />
       <SearchBar />
 
-      {/* Page content — padded horizontally */}
-      <main className="px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw]">
+      {/* Main page content container with top spacing for floating navbar */}
+      <main className="pt-24 sm:pt-28 pb-12 px-4 sm:px-[5vw] md:px-[6vw] lg:px-[8vw] max-w-[1500px] mx-auto">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/collection" element={<Collection />} />

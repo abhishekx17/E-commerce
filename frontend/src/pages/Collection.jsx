@@ -1,5 +1,6 @@
 import { assets } from "assets/assets";
 import ProductItem from "components/ProductItem";
+import ProductSkeleton from "components/ProductSkeleton";
 import Title from "components/Title";
 import { ShopContext } from "context/ShopContext";
 import React, { useContext, useEffect, useState } from "react";
@@ -35,7 +36,7 @@ const FilterCheck = ({ label, value, checked, onChange }) => (
 
 /* ── Main component ──────────────────────────────────────── */
 const Collection = () => {
-  const { products, search, showSearch } = useContext(ShopContext);
+  const { products, loading, search, showSearch } = useContext(ShopContext);
   const [showFilter, setShowFilter] = useState(false);
   const [filterProducts, setFilterProducts] = useState([]);
   const [category, setCategory] = useState([]);
@@ -196,8 +197,10 @@ const Collection = () => {
             </div>
           </div>
 
-          {/* Grid */}
-          {filterProducts.length === 0 ? (
+          {/* Grid or Skeleton Loading */}
+          {loading ? (
+            <ProductSkeleton count={8} />
+          ) : filterProducts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <svg viewBox="0 0 24 24" fill="none" className="w-10 h-10 text-[#DADADA] mb-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="7" />

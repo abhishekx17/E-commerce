@@ -5,157 +5,187 @@ import { Link } from "react-router-dom";
 const slides = [
   {
     image: assets.hero_img,
-    tagline: "New Season · 2025",
-    title: "Latest\nArrivals",
-    cta: "Shop Now",
+    badge: "COLLECTION 2025",
+    tagline: "Autumn / Winter Edit",
+    title: "Timeless\nElegance",
+    description: "Discover handcrafted silhouettes designed for sophisticated everyday luxury.",
+    cta: "Explore Collection",
     ctaLink: "/collection",
   },
   {
     image: assets.hero_img2 || assets.hero_img,
-    tagline: "Curated Styles",
-    title: "Fresh\nEvery Day",
-    cta: "Explore",
+    badge: "NEW ARRIVALS",
+    tagline: "Minimalist Aesthetic",
+    title: "Modern\nEssentials",
+    description: "Curated wardrobe staples crafted with sustainable premium materials.",
+    cta: "Shop Essentials",
     ctaLink: "/collection",
   },
   {
     image: assets.hero_img3 || assets.hero_img,
-    tagline: "Limited Time",
-    title: "Up to\n40% Off",
-    cta: "View Deals",
+    badge: "EXCLUSIVE DEALS",
+    tagline: "Limited Release",
+    title: "The Signature\nSeries",
+    description: "Enjoy up to 30% off selected luxury footwear and tailored outer coats.",
+    cta: "View Limited Deals",
     ctaLink: "/collection",
   },
 ];
 
 const Hero = () => {
   const [current, setCurrent] = useState(0);
-  const [animating, setAnimating] = useState(false);
-  const [textKey, setTextKey] = useState(0);
-
-  const goTo = useCallback(
-    (index) => {
-      if (animating) return;
-      setAnimating(true);
-      setCurrent(index);
-      setTextKey((k) => k + 1);
-      setTimeout(() => setAnimating(false), 700);
-    },
-    [animating]
-  );
+  const [isPaused, setIsPaused] = useState(false);
 
   const nextSlide = useCallback(() => {
-    goTo((current + 1) % slides.length);
-  }, [current, goTo]);
+    setCurrent((prev) => (prev + 1) % slides.length);
+  }, []);
 
   const prevSlide = () => {
-    goTo((current - 1 + slides.length) % slides.length);
+    setCurrent((prev) => (prev - 1 + slides.length) % slides.length);
   };
 
-  // Auto-advance
+  // Carousel autoplay timer
   useEffect(() => {
-    const timer = setInterval(nextSlide, 5000);
-    return () => clearInterval(timer);
-  }, [nextSlide]);
+    if (isPaused) return;
+    const interval = setInterval(nextSlide, 6000);
+    return () => clearInterval(interval);
+  }, [nextSlide, isPaused]);
 
   return (
-    <div className="relative w-full overflow-hidden bg-[#FAF9F7]" style={{ minHeight: "420px" }}>
+    <div className="relative w-full rounded-3xl overflow-hidden bg-[#FAF9F6] border border-black/5 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.06)] mb-12">
+      
+      {/* ── Slides Container ── */}
+      <div className="relative min-h-[520px] sm:min-h-[580px] lg:min-h-[640px] flex items-center">
+        {slides.map((slide, index) => {
+          const isActive = index === current;
 
-      {/* Slides track */}
-      <div
-        className="flex transition-transform duration-700 ease-[cubic-bezier(0.77,0,0.175,1)]"
-        style={{ transform: `translateX(-${current * 100}%)` }}
-      >
-        {slides.map((slide, index) => (
-          <div key={index} className="flex flex-col sm:flex-row w-full flex-shrink-0">
+          return (
+            <div
+              key={index}
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+              className={`absolute inset-0 w-full h-full flex flex-col lg:flex-row transition-opacity duration-1000 ease-in-out ${
+                isActive ? "opacity-100 pointer-events-auto z-10" : "opacity-0 pointer-events-none z-0"
+              }`}
+            >
+              {/* Left Column: Text & Content */}
+              <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 lg:p-16 z-10 bg-gradient-to-r from-[#FAF9F6] via-[#FAF9F6] to-transparent">
+                <div
+                  className={`max-w-md w-full transition-all duration-700 delay-200 transform ${
+                    isActive ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"
+                  }`}
+                >
+                  {/* Badge & Tagline */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <span className="px-3 py-1 rounded-full text-[10px] font-bold tracking-widest text-[#8C7355] bg-[#8C7355]/10 border border-[#8C7355]/20 uppercase">
+                      {slide.badge}
+                    </span>
+                    <span className="h-px w-6 bg-[#8C7355]/40" />
+                    <span className="text-xs font-semibold tracking-wider text-[#666] uppercase">
+                      {slide.tagline}
+                    </span>
+                  </div>
 
-            {/* ── Left: text panel ── */}
-            <div className="w-full sm:w-1/2 flex items-center justify-center py-12 sm:py-16 px-8 sm:px-12 lg:px-16 bg-[#FAF9F7] order-2 sm:order-1">
-              <div
-                key={index === current ? textKey : index}
-                className="max-w-sm text-center sm:text-left"
-                style={{
-                  animation: index === current ? "heroFadeUp 0.6s ease-out both" : "none",
-                }}
-              >
-                {/* Eyebrow */}
-                <div className="flex items-center gap-2.5 justify-center sm:justify-start mb-5">
-                  <span className="h-px w-8 bg-[#8C7355]" />
-                  <span className="text-[10px] tracking-[0.25em] text-[#8C7355] font-medium uppercase whitespace-nowrap">
-                    {slide.tagline}
-                  </span>
+                  {/* Title */}
+                  <h1 className="font-serif-title text-4xl sm:text-5xl lg:text-6xl text-[#121212] leading-[1.1] mb-5 tracking-tight whitespace-pre-line">
+                    {slide.title}
+                  </h1>
+
+                  {/* Description */}
+                  <p className="text-xs sm:text-sm text-[#555] leading-relaxed mb-8 max-w-sm">
+                    {slide.description}
+                  </p>
+
+                  {/* Call to Action Button */}
+                  <div className="flex items-center gap-4">
+                    <Link
+                      to={slide.ctaLink}
+                      className="group relative inline-flex items-center gap-3 px-7 py-3.5 rounded-full bg-[#121212] text-white text-xs font-semibold uppercase tracking-wider overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 active:scale-95"
+                    >
+                      <span className="relative z-10">{slide.cta}</span>
+                      <svg className="w-4 h-4 relative z-10 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                      <div className="absolute inset-0 bg-[#8C7355] translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+                    </Link>
+
+                    <Link
+                      to="/collection"
+                      className="px-5 py-3.5 rounded-full border border-black/15 text-xs font-semibold uppercase tracking-wider text-[#121212] hover:bg-black/5 transition-colors"
+                    >
+                      View All
+                    </Link>
+                  </div>
                 </div>
+              </div>
 
-                {/* Headline */}
-                <h1
-                  className="font-['Playfair_Display',Georgia,serif] text-[2.4rem] sm:text-[2.8rem] lg:text-[3.6rem] leading-[1.08] text-[#1A1A1A] mb-6 tracking-tight whitespace-pre-line"
-                >
-                  {slide.title}
-                </h1>
-
-                {/* CTA */}
-                <Link
-                  to={slide.ctaLink}
-                  className="inline-flex items-center gap-3 group"
-                >
-                  <span className="text-[11px] tracking-[0.22em] font-semibold uppercase text-[#1A1A1A] group-hover:text-[#8C7355] transition-colors duration-200">
-                    {slide.cta}
-                  </span>
-                  <span className="h-px bg-[#1A1A1A] group-hover:bg-[#8C7355] transition-all duration-300 w-8 group-hover:w-14" />
-                </Link>
+              {/* Right Column: Hero Image with subtle Ken Burns zoom */}
+              <div className="w-full lg:w-1/2 h-[300px] sm:h-[400px] lg:h-full relative overflow-hidden">
+                <img
+                  src={slide.image}
+                  alt={slide.title}
+                  className={`w-full h-full object-cover object-center transition-transform duration-[8000ms] ease-out ${
+                    isActive ? "scale-105" : "scale-100"
+                  }`}
+                />
+                {/* Subtle vignette gradient overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-[#FAF9F6]/40 via-transparent to-transparent lg:bg-gradient-to-r lg:from-[#FAF9F6] lg:via-transparent lg:to-transparent" />
               </div>
             </div>
-
-            {/* ── Right: image panel ── */}
-            <div className="w-full sm:w-1/2 h-[260px] sm:h-[520px] lg:h-[600px] overflow-hidden order-1 sm:order-2">
-              <img
-                className="w-full h-full object-cover transition-transform duration-[6000ms] ease-linear scale-[1.04] hover:scale-[1.06]"
-                src={slide.image}
-                alt={slide.title}
-                style={{ transform: index === current ? "scale(1)" : "scale(1.04)" }}
-              />
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
-      {/* ── Nav arrows ── */}
-      {[
-        { dir: "prev", onClick: prevSlide, icon: "‹", position: "left-4" },
-        { dir: "next", onClick: nextSlide, icon: "›", position: "right-4" },
-      ].map(({ dir, onClick, icon, position }) => (
-        <button
-          key={dir}
-          onClick={onClick}
-          aria-label={dir === "prev" ? "Previous slide" : "Next slide"}
-          className={`absolute ${position} top-1/2 -translate-y-1/2 w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-white/80 backdrop-blur-sm border border-black/8 flex items-center justify-center text-[#1A1A1A] text-2xl shadow-[0_2px_12px_rgba(0,0,0,0.12)] hover:bg-white hover:shadow-[0_4px_20px_rgba(0,0,0,0.15)] transition-all duration-200 hover:scale-105 active:scale-95`}
-        >
-          {icon}
-        </button>
-      ))}
+      {/* ── Slide Controls & Indicators ── */}
+      <div className="absolute bottom-6 left-8 right-8 z-20 flex items-center justify-between pointer-events-none">
+        
+        {/* Slide Counter (01 / 03) */}
+        <div className="flex items-center gap-3 bg-white/70 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/60 shadow-sm pointer-events-auto">
+          <span className="text-xs font-bold text-[#121212]">
+            0{current + 1}
+          </span>
+          <span className="text-xs text-[#999]">/</span>
+          <span className="text-xs font-medium text-[#777]">
+            0{slides.length}
+          </span>
+        </div>
 
-      {/* ── Progress dots ── */}
-      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
-        {slides.map((_, index) => (
+        {/* Progress Bar Dots */}
+        <div className="hidden sm:flex items-center gap-2 bg-white/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/60 shadow-sm pointer-events-auto">
+          {slides.map((_, idx) => (
+            <button
+              key={idx}
+              onClick={() => setCurrent(idx)}
+              aria-label={`Go to slide ${idx + 1}`}
+              className={`h-2 rounded-full transition-all duration-500 ${
+                current === idx ? "w-8 bg-[#8C7355]" : "w-2 bg-black/20 hover:bg-black/40"
+              }`}
+            />
+          ))}
+        </div>
+
+        {/* Prev / Next Glass Buttons */}
+        <div className="flex items-center gap-2 pointer-events-auto">
           <button
-            key={index}
-            onClick={() => goTo(index)}
-            aria-label={`Go to slide ${index + 1}`}
-            className={`rounded-full transition-all duration-400 ${
-              current === index
-                ? "w-6 h-1.5 bg-[#1A1A1A]"
-                : "w-1.5 h-1.5 bg-[#1A1A1A]/25 hover:bg-[#1A1A1A]/50"
-            }`}
-          />
-        ))}
+            onClick={prevSlide}
+            aria-label="Previous slide"
+            className="p-3 rounded-full bg-white/80 backdrop-blur-md border border-white/80 shadow-md text-[#121212] hover:bg-white hover:scale-105 active:scale-95 transition-all"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
+          <button
+            onClick={nextSlide}
+            aria-label="Next slide"
+            className="p-3 rounded-full bg-white/80 backdrop-blur-md border border-white/80 shadow-md text-[#121212] hover:bg-white hover:scale-105 active:scale-95 transition-all"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
       </div>
-
-      {/* ── Keyframe style ── */}
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap');
-        @keyframes heroFadeUp {
-          from { opacity: 0; transform: translateY(18px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
     </div>
   );
 };
